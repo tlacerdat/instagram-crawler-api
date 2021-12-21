@@ -1,5 +1,5 @@
 # instagram-crawler-api
-Must need a .env file with:
+Must have an .env file with:
 
 USER=validInstagramUser
 
