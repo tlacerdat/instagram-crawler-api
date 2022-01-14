@@ -1,34 +1,15 @@
 require("dotenv").config();
 const puppeteer = require("puppeteer");
 
-// exports.post = (req, res, next) => {
-//   res.status(201).send("Route POST!");
-// };
-
-// exports.put = (req, res, next) => {
-//   let id = req.params.id;
-//   res.status(201).send(`Route PUT com ID! --> ${id}`);
-// };
-
-// exports.delete = (req, res, next) => {
-//   let id = req.params.id;
-//   res.status(200).send(`Route DELETE com ID! --> ${id}`);
-// };
-
-// exports.get = (req, res, next) => {
-//   res.status(200).send("Route GET! vava");
-// };
-
 let browser;
 let allDone = false;
 exports.getInstaDataByUsername = async (req, res, next) => {
   const { username } = await req.params;
-
   if (!browser) {
-    browser = browser = await puppeteer.launch({
-      headless: false,
+    browser = await puppeteer.launch({
+      headless: true,
       userDataDir: "./myUserDataDir",
-      args: ["--lang=en-US,en"],
+      args: ["--lang=en-US,en", "--no-sandbox", "--disable-setuid-sandbox"],
     });
     allDone = false;
   }
@@ -64,6 +45,7 @@ exports.getInstaDataByUsername = async (req, res, next) => {
 
     if (url.includes("/login")) {
       // Waiting inputs and submit button
+
       await Promise.all([
         page.waitForSelector('[name="username"]', { visible: true }),
         page.waitForSelector('[name="password"]', { visible: true }),
@@ -71,10 +53,10 @@ exports.getInstaDataByUsername = async (req, res, next) => {
       ]);
 
       await page.click('[name="username"]');
-      await page.type('[name="username"]', process.env.USER);
+      await page.type('[name="username"]', process.env.INSTA_USER);
 
       await page.click('[name="password"]');
-      await page.type('[name="password"]', process.env.PASS);
+      await page.type('[name="password"]', process.env.INSTA_USER_PASS);
 
       await page.click('[type="submit"]');
       await page.waitForTimeout(5000);
@@ -87,7 +69,7 @@ exports.getInstaDataByUsername = async (req, res, next) => {
         await buttonSaveLoginInfo.click();
         await page.waitForTimeout(5000);
       } catch (error) {
-        console.log("Alert 'Save info' didn't appear.");
+        console.log("Alert: 'Save info' didn't appear.");
       }
 
       // Notifications
@@ -97,7 +79,7 @@ exports.getInstaDataByUsername = async (req, res, next) => {
         });
         await notNowBtn.click();
       } catch (error) {
-        console.log("Alert 'Turn On Notifications' didn't appear.");
+        console.log("Alert: 'Turn On Notifications' didn't appear.");
       }
     }
   }
@@ -114,5 +96,12 @@ exports.getInstaDataByUsername = async (req, res, next) => {
   await page.close();
   // await browser.close();
   console.log("Done, user: " + username);
-  await res.status(200).send(graphQlContent);
+
+  if (graphQlContent && graphQlContent.length > 0) {
+    await res.status(200).send(graphQlContent);
+  } else {
+    await res.status(400).json({
+      message: "Exec error",
+    });
+  }
 };
