@@ -1,9 +1,9 @@
 # instagram-crawler-api
 Must have an .env file with:
 
-USER=validInstagramUser
+INSTA_USER=validInstagramUser
 
-PASS=validInstagramUserPassword
+INSTA_USER_PASS=validInstagramUserPassword
 
 TOKEN=XXXX
 
